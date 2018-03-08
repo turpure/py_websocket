@@ -1,6 +1,7 @@
 #! usr/bin/python
 # coding:utf8
 
+import time
 from flask import Flask
 from flask_sockets import Sockets
 
@@ -16,13 +17,16 @@ def echo_socket(ws):
         ws.send(message)
 
 
-@app.route('/')
-def hello():
-    return 'Hello World!'
+@sockets.route('/')
+def hello(ws):
+    while not ws.closed:
+        time.sleep(1)
+        now = time.time()
+        ws.send(str(now).encode())
 
 
 if __name__ == "__main__":
     from gevent import pywsgi
     from geventwebsocket.handler import WebSocketHandler
-    server = pywsgi.WSGIServer(('127.0.0.1', 8880), app, handler_class=WebSocketHandler)
+    server = pywsgi.WSGIServer(('localhost', 8880), app, handler_class=WebSocketHandler)
     server.serve_forever()
